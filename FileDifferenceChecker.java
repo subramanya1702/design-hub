@@ -2,34 +2,36 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-/**
- * Class to store the mismatched line number, corresponding lines from first and second file
- */
-class Tuple {
-    private final int lineNumber;
-    private final String line1;
-    private final String line2;
-
-    public Tuple(final int lineNumber, final String line1, final String line2) {
-        this.lineNumber = lineNumber;
-        this.line1 = line1;
-        this.line2 = line2;
-    }
-
-    public int getLineNumber() {
-        return this.lineNumber;
-    }
-
-    public String getLine1() {
-        return this.line1;
-    }
-
-    public String getLine2() {
-        return this.line2;
-    }
-}
 
 public class FileDifferenceChecker {
+
+    /**
+     * Class to store the mismatched line number, corresponding lines from first and second file
+     */
+    static class Tuple {
+        private final int lineNumber;
+        private final String line1;
+        private final String line2;
+
+        public Tuple(final int lineNumber, final String line1, final String line2) {
+            this.lineNumber = lineNumber;
+            this.line1 = line1;
+            this.line2 = line2;
+        }
+
+        public int getLineNumber() {
+            return this.lineNumber;
+        }
+
+        public String getLine1() {
+            return this.line1;
+        }
+
+        public String getLine2() {
+            return this.line2;
+        }
+    }
+
     private final String firstFileName;
     private final String secondFileName;
 
@@ -88,6 +90,14 @@ public class FileDifferenceChecker {
                 }
             }
         }
+    }
+
+    public static void main(String[] args) throws IOException {
+        long start = System.nanoTime();
+        FileDifferenceChecker fileDifferenceChecker = new FileDifferenceChecker("src/file1.txt", "src/file2.txt");
+        fileDifferenceChecker.compare();
+
+        System.out.println("Time taken for comparison: " + String.valueOf((System.nanoTime() - start) * Math.pow(10, 6)) + "ms");
     }
 
 }
