@@ -1,5 +1,6 @@
 package com.design.urlshortener.service;
 
+import com.design.urlshortener.cache.UrlCache;
 import com.design.urlshortener.dto.ShortUrlRequestDto;
 import com.design.urlshortener.exception.BadRequestException;
 import com.design.urlshortener.model.ShortUrl;
@@ -18,19 +19,25 @@ import static com.design.urlshortener.constant.Constants.BASE_62_CHARACTERS_SIZE
 public class UrlService {
 
     private final UrlRepository urlRepository;
-    private static long counter = 10000000000L;
+    private final UrlCache urlCache;
 
     @Value("${url.shortener.base.url}")
     private String baseUrl;
 
     @Autowired
-    public UrlService(final UrlRepository urlRepository) {
+    public UrlService(final UrlRepository urlRepository,
+                      final UrlCache urlCache) {
         this.urlRepository = urlRepository;
+        this.urlCache = urlCache;
     }
 
     public String getLongUrl(final String shortUrlId) {
-        final ShortUrl shortUrl = this.urlRepository.findByShortUrlId(shortUrlId);
+        final String cachedUrl = this.urlCache.get(shortUrlId);
+        if (!cachedUrl.isEmpty()) {
+            return cachedUrl;
+        }
 
+        final ShortUrl shortUrl = this.urlRepository.findByShortUrlId(shortUrlId);
         if (ObjectUtils.isEmpty(shortUrl)) {
             throw new BadRequestException("URL is not valid!");
         }
@@ -39,18 +46,16 @@ public class UrlService {
     }
 
     public String createShortUrl(final ShortUrlRequestDto shortUrlRequestDto) {
-        String shortUrlId = "";
+        final long currentTime = Instant.now().toEpochMilli();
+        final String shortUrlId = generateShortUrl(currentTime);
 
-        synchronized (this) {
-            shortUrlId = generateShortUrl(counter);
-            counter++;
-        }
         this.urlRepository.save(new ShortUrl(
                 shortUrlId,
                 shortUrlRequestDto.getLongUrl(),
                 shortUrlRequestDto.getEmail(),
-                Instant.now())
+                currentTime)
         );
+        this.urlCache.put(shortUrlId, shortUrlRequestDto.getLongUrl());
 
         return this.baseUrl + shortUrlId;
     }
