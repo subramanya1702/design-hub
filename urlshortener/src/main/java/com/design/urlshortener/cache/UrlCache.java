@@ -11,10 +11,12 @@ import java.util.Optional;
 public class UrlCache {
 
     private final Cache urlCache;
+    private final Cache reverseUrlCache;
 
     @Autowired
     public UrlCache(final CacheManager cacheManager) {
         this.urlCache = cacheManager.getCache("urlCache");
+        this.reverseUrlCache = cacheManager.getCache("reverseUrlCache");
     }
 
     public String get(final String shortUrlId) {
@@ -22,7 +24,13 @@ public class UrlCache {
                 .orElse("");
     }
 
+    public String getReverse(final String longUrl) {
+        return Optional.ofNullable(this.reverseUrlCache.get(longUrl, String.class))
+                .orElse("");
+    }
+
     public void put(final String shortUrlId, final String longUrl) {
         this.urlCache.put(shortUrlId, longUrl);
+        this.reverseUrlCache.put(longUrl, shortUrlId);
     }
 }

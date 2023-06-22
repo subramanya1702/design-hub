@@ -3,14 +3,13 @@ package com.design.urlshortener.service;
 import com.design.urlshortener.cache.UrlCache;
 import com.design.urlshortener.dto.ShortUrlRequestDto;
 import com.design.urlshortener.exception.BadRequestException;
+import com.design.urlshortener.generator.ShortUrlIdGenerator;
 import com.design.urlshortener.model.ShortUrl;
 import com.design.urlshortener.repository.UrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-
-import java.time.Instant;
 
 import static com.design.urlshortener.constant.Constants.BASE_62_CHARACTERS;
 import static com.design.urlshortener.constant.Constants.BASE_62_CHARACTERS_SIZE;
@@ -20,6 +19,10 @@ public class UrlService {
 
     private final UrlRepository urlRepository;
     private final UrlCache urlCache;
+    private final ShortUrlIdGenerator shortUrlIdGenerator;
+
+    private long cacheHits = 0;
+    private long databaseHits = 0;
 
     @Value("${url.shortener.base.url}")
     private String baseUrl;
@@ -29,6 +32,7 @@ public class UrlService {
                       final UrlCache urlCache) {
         this.urlRepository = urlRepository;
         this.urlCache = urlCache;
+        this.shortUrlIdGenerator = new ShortUrlIdGenerator(1, 1);
     }
 
     public String getLongUrl(final String shortUrlId) {
@@ -46,18 +50,54 @@ public class UrlService {
     }
 
     public String createShortUrl(final ShortUrlRequestDto shortUrlRequestDto) {
-        final long currentTime = Instant.now().toEpochMilli();
-        final String shortUrlId = generateShortUrl(currentTime);
+        String shortUrl = getShortUrlFromCache(shortUrlRequestDto.getLongUrl());
+        if (!shortUrl.isEmpty()) {
+            cacheHits++;
+            return this.baseUrl + shortUrl;
+        }
 
-        this.urlRepository.save(new ShortUrl(
-                shortUrlId,
-                shortUrlRequestDto.getLongUrl(),
-                shortUrlRequestDto.getEmail(),
-                currentTime)
-        );
-        this.urlCache.put(shortUrlId, shortUrlRequestDto.getLongUrl());
+        final long id = shortUrlIdGenerator.getId();
+        shortUrl = generateShortUrl(id);
 
-        return this.baseUrl + shortUrlId;
+        synchronized (this) {
+            final String shortUrlFromDatabase = this.getShortUrlFromDatabase(shortUrlRequestDto.getLongUrl());
+            if (!shortUrlFromDatabase.isEmpty()) {
+                databaseHits++;
+                return this.baseUrl + shortUrlFromDatabase;
+            }
+
+            this.urlRepository.save(new ShortUrl(
+                    id,
+                    shortUrl,
+                    shortUrlRequestDto.getLongUrl(),
+                    shortUrlRequestDto.getEmail())
+            );
+        }
+        this.urlCache.put(shortUrl, shortUrlRequestDto.getLongUrl());
+
+        return this.baseUrl + shortUrl;
+    }
+
+    public String getStatistics() {
+        return "CacheHits: " + cacheHits + " | DatabaseHits: " + databaseHits;
+    }
+
+    private String getShortUrlFromCache(final String longUrl) {
+        final String cachedShortUrl = this.urlCache.getReverse(longUrl);
+        if (!cachedShortUrl.isEmpty()) {
+            return cachedShortUrl;
+        }
+
+        return "";
+    }
+
+    private String getShortUrlFromDatabase(final String longUrl) {
+        final ShortUrl shortUrl = this.urlRepository.findByLongUrl(longUrl);
+        if (!ObjectUtils.isEmpty(shortUrl)) {
+            return shortUrl.getShortUrl();
+        }
+
+        return "";
     }
 
     private String generateShortUrl(long n) {

@@ -12,17 +12,15 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class ShortUrl {
-    private String id;
-    private String shortUrlId;
+    private long id;
+    private String shortUrl;
     private String longUrl;
     private String email;
-    private long createdDate;
 
-    public ShortUrl(String shortUrlId, String longUrl, String email, long createdDate) {
-        this.id = UUID.randomUUID().toString();
-        this.shortUrlId = shortUrlId;
+    public ShortUrl(long id, String shortUrl, String longUrl, String email) {
+        this.id = id;
+        this.shortUrl = shortUrl;
         this.longUrl = longUrl;
         this.email = email;
-        this.createdDate = createdDate;
     }
 }

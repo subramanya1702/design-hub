@@ -10,4 +10,7 @@ public interface UrlRepository extends MongoRepository<ShortUrl, Long> {
 
     @Query("{shortUrlId:'?0'}")
     ShortUrl findByShortUrlId(String shortUrlId);
+
+    @Query("{longUrl:'?0'}")
+    ShortUrl findByLongUrl(String longUrl);
 }
