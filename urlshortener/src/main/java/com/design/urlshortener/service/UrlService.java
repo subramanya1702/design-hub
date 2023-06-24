@@ -70,7 +70,7 @@ public class UrlService {
                     id,
                     shortUrl,
                     shortUrlRequestDto.getLongUrl(),
-                    shortUrlRequestDto.getEmail())
+                    shortUrlRequestDto.getUserId())
             );
         }
         this.urlCache.put(shortUrl, shortUrlRequestDto.getLongUrl());

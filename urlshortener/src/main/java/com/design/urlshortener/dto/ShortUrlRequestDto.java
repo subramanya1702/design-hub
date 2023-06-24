@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ShortUrlRequestDto {
     private String longUrl;
-    private String email;
+    private String userId;
 }

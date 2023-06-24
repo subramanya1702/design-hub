@@ -15,12 +15,12 @@ public class ShortUrl {
     private long id;
     private String shortUrl;
     private String longUrl;
-    private String email;
+    private String userId;
 
-    public ShortUrl(long id, String shortUrl, String longUrl, String email) {
+    public ShortUrl(long id, String shortUrl, String longUrl, String userId) {
         this.id = id;
         this.shortUrl = shortUrl;
         this.longUrl = longUrl;
-        this.email = email;
+        this.userId = userId;
     }
 }
