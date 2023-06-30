@@ -5,13 +5,15 @@ public class StringBuilder {
     private final static int DEFAULT_CAPACITY = 16;
     private byte[] value;
     private int length;
+    private int capacity = Integer.MAX_VALUE;
 
     public StringBuilder() {
         this.value = new byte[DEFAULT_CAPACITY];
     }
 
-    public StringBuilder(int initialCapacity) {
-        this.value = new byte[initialCapacity];
+    public StringBuilder(int maximumCapacity) {
+        this.value = new byte[maximumCapacity];
+        this.capacity = maximumCapacity;
     }
 
     public void append(Object object) {
@@ -27,6 +29,10 @@ public class StringBuilder {
     }
 
     private void appendCharacters(String characters) {
+        if (this.length == this.capacity) {
+            throw new MaximumCapacityReachedException();
+        }
+
         byte[] chars = characters.getBytes(StandardCharsets.UTF_8);
 
         for (byte c : chars) {

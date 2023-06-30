@@ -1,6 +1,7 @@
 public class ArrayList<E> {
 
     private final static int DEFAULT_CAPACITY = 10;
+    private int capacity = Integer.MAX_VALUE;
     private Object[] elementData;
     private int size;
 
@@ -8,8 +9,9 @@ public class ArrayList<E> {
         this.elementData = new Object[DEFAULT_CAPACITY];
     }
 
-    public ArrayList(int initialCapacity) {
-        this.elementData = new Object[initialCapacity];
+    public ArrayList(int maximumCapacity) {
+        this.elementData = new Object[maximumCapacity];
+        this.capacity = maximumCapacity;
     }
 
     public void add(E e) {
@@ -39,6 +41,10 @@ public class ArrayList<E> {
     }
 
     private void addNewElement(E e) {
+        if (this.size == this.capacity) {
+            throw new MaximumCapacityReachedException();
+        }
+
         if (this.elementData.length == this.size) {
             this.elementData = increaseCapacity();
         }
