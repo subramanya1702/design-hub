@@ -140,13 +140,10 @@ class TestQueue {
             System.out.println("Offer should not be successful");
         }
 
-        boolean isExceptionThrown = false;
         try {
             boundedQueue.add(12);
         } catch (MaximumCapacityReachedException e) {
-            isExceptionThrown = true;
+            System.out.println("Exception thrown");
         }
-
-        System.out.println("Exception thrown: " + isExceptionThrown);
     }
 }
