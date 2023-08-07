@@ -59,7 +59,8 @@ public class NStacksUsingOneArray<E> {
         Object[] newStackData = new Object[newLength];
 
         if (stackBegPointers[stackNumber] + stackMaxSizes[stackNumber] >= 0) {
-            System.arraycopy(this.elementData,
+            System.arraycopy(
+                    this.elementData,
                     0,
                     newStackData,
                     0,
@@ -76,7 +77,8 @@ public class NStacksUsingOneArray<E> {
                             this.elementData,
                             stackBegPointers[i],
                             newStackData,
-                            stackBegPointers[i] + offset, stackMaxSizes[i] - stackBegPointers[i]
+                            stackBegPointers[i] + offset,
+                            stackMaxSizes[i] - stackBegPointers[i]
                     );
                 }
 
